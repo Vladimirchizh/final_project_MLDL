@@ -8,7 +8,22 @@ dtc_data['location_name'] = dtc_data \
 # %%
 hourly_vol = dtc_data.groupby(['location_name','location_latitude','location_longitude','Direction','Hour']).agg({'Volume':'mean'}).reset_index()
 hourly_vol
-# %% 
+#%%
+
+# normalising 
+def create_sequences(data, seq_length):
+    xs = []
+    ys = []
+
+    for i in range(len(data)-seq_length-1):
+        x = data[i:(i+seq_length)]
+        y = data[i+seq_length]
+        xs.append(x)
+        ys.append(y)
+
+    return np.array(xs), np.array(ys)
+
+
 class TrafficPredictor(nn.Module):
     def __init__(self, n_features, n_hidden, seq_len, n_layers):
 
