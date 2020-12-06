@@ -33,7 +33,7 @@ hourly = hourly_raw['Volume']
 hourly = hourly.diff().fillna(hourly[0]).astype(np.int64)
 
 # %%
-test_data_size = 5
+test_data_size = 8
 
 train_data = hourly[:-test_data_size]
 test_data = hourly[-test_data_size:]
@@ -65,7 +65,7 @@ def create_sequences(data, seq_length):
 seq_length = 5
 X_train, y_train = create_sequences(train_data, seq_length)
 X_test, y_test = create_sequences(test_data, seq_length)
-
+# %%
 X_train = torch.from_numpy(X_train).float()
 y_train = torch.from_numpy(y_train).float()
 
@@ -107,7 +107,7 @@ def train_model(model,train_data,train_labels, test_data=None,test_labels=None):
     loss_fn = torch.nn.MSELoss(reduction='sum')
 
     optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
-    num_epochs = 60
+    num_epochs = 200
 
     train_hist = np.zeros(num_epochs)
     test_hist = np.zeros(num_epochs)
@@ -200,3 +200,4 @@ plt.plot(
 )
 
 plt.legend()
+# %%
