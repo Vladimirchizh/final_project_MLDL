@@ -24,8 +24,7 @@ d_hourly.index = pd.to_datetime(df['Date'])
 # d_hourly = d_hourly.diff().fillna(d_hourly[0]).astype(np.int64)
 
 # %% mean traffic for the whole city
-# hourly_vol = dtc_data.groupby(['location_name','location_latitude','location_longitude','Direction','Hour']) \
-#   .agg({'Volume':'mean'}).reset_index()
+
 hourly_raw = dtc_data.groupby(['Hour']) \
     .agg({'Volume': 'mean'}) \
     .reset_index()
@@ -33,6 +32,7 @@ hourly = hourly_raw['Volume']
 hourly = hourly.diff().fillna(hourly[0]).astype(np.int64)
 
 # %% traffic for each crossroad
+
 locations = list(dtc_data.location_name.unique())
 hourly_locations = dict()
 for i in range(len(locations)):
@@ -43,7 +43,7 @@ for i in range(len(locations)):
     hourly_locations[i] = hourly_locations[i].diff().fillna(hourly_locations[i][0]).astype(np.int64)
 
 # %%
-def sampling_data(dataset):
+def test_train_scaling(dataset):
     test_data_size = 8
     train_data = dataset[:-test_data_size]
     test_data = dataset[-test_data_size:]
@@ -52,7 +52,7 @@ def sampling_data(dataset):
     scaler = scaler.fit(np.expand_dims(train_data, axis=1))
     train_data = scaler.transform(np.expand_dims(train_data, axis=1))
     test_data = scaler.transform(np.expand_dims(test_data, axis=1))
-
+    return train_data, test_data, scaler
 
 
 
@@ -72,14 +72,16 @@ def create_sequences(data, seq_length):
 
 
 seq_length = 5
-X_train, y_train = create_sequences(train_data, seq_length)
-X_test, y_test = create_sequences(test_data, seq_length)
-# %%
-X_train = torch.from_numpy(X_train).float()
-y_train = torch.from_numpy(y_train).float()
+def sampling_data(train_data, test_data):
+    X_train, y_train = create_sequences(train_data, seq_length)
+    X_test, y_test = create_sequences(test_data, seq_length)    
+    X_train = torch.from_numpy(X_train).float()
+    y_train = torch.from_numpy(y_train).float()
 
-X_test = torch.from_numpy(X_test).float()
-y_test = torch.from_numpy(y_test).float()
+    X_test = torch.from_numpy(X_test).float()
+    y_test = torch.from_numpy(y_test).float()
+    return X_train, y_train, X_test, y_test
+
 
 
 # %%
@@ -149,7 +151,8 @@ def train_model(model,train_data,train_labels, test_data=None,test_labels=None):
 
     return model.eval(), train_hist, test_hist
 # %% 
-
+train_data, test_data, scaler = test_train_scaling(hourly)
+X_train, y_train, X_test, y_test = sampling_data( train_data, test_data)
 model = TrafficPredictor(
   n_features=1, 
   n_hidden=512, 
@@ -209,4 +212,28 @@ plt.plot(
 )
 
 plt.legend()
+# %%
+true_cases = dict()
+predicted_cases = dict()
+for z in range(len(hourly_locations)):
+    train_data, test_data, scaler = test_train_scaling(hourly_locations[z])
+    X_train, y_train, X_test, y_test = sampling_data(train_data, test_data )
+    model = TrafficPredictor(n_features=1, n_hidden=512, seq_len=seq_length, n_layers=2)
+    model, train_hist, test_hist = train_model(model, X_train, y_train, X_test, y_test)
+    
+    with torch.no_grad():
+      test_seq = X_test[:1]
+      preds = []
+      for _ in range(len(X_test)):
+        y_test_pred = model(test_seq)
+        pred = torch.flatten(y_test_pred).item()
+        preds.append(pred)
+        new_seq = test_seq.numpy().flatten()
+        new_seq = np.append(new_seq, [pred])
+        new_seq = new_seq[1:]
+        test_seq = torch.as_tensor(new_seq).view(1, seq_length, 1).float()
+
+    true_cases[z] = scaler.inverse_transform(np.expand_dims(y_test.flatten().numpy(), axis=0)).flatten()
+    predicted_cases[z] = scaler.inverse_transform(np.expand_dims(preds, axis=0)).flatten()
+    
 # %%
