@@ -2,6 +2,8 @@
 import torch
 import pandas as pd
 from torch import nn, optim
+import matplotlib.pyplot as plt
+
 
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -74,6 +76,7 @@ y_test = torch.from_numpy(y_test).float()
 # %%
 class TrafficPredictor(nn.Module):
     def __init__(self, n_features, n_hidden, seq_len, n_layers):
+        super(TrafficPredictor,self).__init__()
         self.n_hidden = n_hidden
         self.seq_len = seq_len
         self.n_layers = n_layers
@@ -94,7 +97,11 @@ class TrafficPredictor(nn.Module):
         last_time_step = lstm_out.view(self.seq_len, len(sequences), self.n_hidden)[-1]
         y_pred = self.linear(last_time_step)
         return y_pred
-
+    def reset_hidden_state(self):
+        self.hidden = (
+        torch.zeros(self.n_layers, self.seq_len, self.n_hidden),
+        torch.zeros(self.n_layers, self.seq_len, self.n_hidden)
+        )
 
 def train_model(model,train_data,train_labels, test_data=None,test_labels=None):
     loss_fn = torch.nn.MSELoss(reduction='sum')
@@ -132,3 +139,64 @@ def train_model(model,train_data,train_labels, test_data=None,test_labels=None):
         optimiser.step()
 
     return model.eval(), train_hist, test_hist
+# %% 
+
+model = TrafficPredictor(
+  n_features=1, 
+  n_hidden=512, 
+  seq_len=seq_length, 
+  n_layers=2
+)
+model, train_hist, test_hist = train_model(
+  model, 
+  X_train, 
+  y_train, 
+  X_test, 
+  y_test
+)
+
+plt.plot(train_hist, label="Training loss")
+plt.plot(test_hist, label="Test loss")
+plt.ylim((0, 5))
+plt.legend()
+# %% 
+
+with torch.no_grad():
+  test_seq = X_test[:1]
+  preds = []
+  for _ in range(len(X_test)):
+    y_test_pred = model(test_seq)
+    pred = torch.flatten(y_test_pred).item()
+    preds.append(pred)
+    new_seq = test_seq.numpy().flatten()
+    new_seq = np.append(new_seq, [pred])
+    new_seq = new_seq[1:]
+    test_seq = torch.as_tensor(new_seq).view(1, seq_length, 1).float()
+
+true_cases = scaler.inverse_transform(
+    np.expand_dims(y_test.flatten().numpy(), axis=0)
+).flatten()
+
+predicted_cases = scaler.inverse_transform(
+  np.expand_dims(preds, axis=0)
+).flatten()
+# %%
+plt.plot(
+  hourly.index[:len(train_data)], 
+  scaler.inverse_transform(train_data).flatten(),
+  label='Historical traffic data'
+)
+
+plt.plot(
+  hourly.index[len(train_data):len(train_data) + len(true_cases)], 
+  true_cases,
+  label='Real traffic data'
+)
+
+plt.plot(
+  hourly.index[len(train_data):len(train_data) + len(true_cases)], 
+  predicted_cases, 
+  label='Predicted traffic data'
+)
+
+plt.legend()
