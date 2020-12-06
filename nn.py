@@ -23,7 +23,7 @@ d_hourly = df['Volume']
 d_hourly.index = pd.to_datetime(df['Date'])
 # d_hourly = d_hourly.diff().fillna(d_hourly[0]).astype(np.int64)
 
-# %%
+# %% mean traffic for the whole city
 # hourly_vol = dtc_data.groupby(['location_name','location_latitude','location_longitude','Direction','Hour']) \
 #   .agg({'Volume':'mean'}).reset_index()
 hourly_raw = dtc_data.groupby(['Hour']) \
@@ -32,17 +32,26 @@ hourly_raw = dtc_data.groupby(['Hour']) \
 hourly = hourly_raw['Volume']
 hourly = hourly.diff().fillna(hourly[0]).astype(np.int64)
 
+# %% traffic for each crossroad
+locations = list(dtc_data.location_name.unique())
+hourly_locations = dict()
+for i in range(len(locations)):
+    hourly_locations[i] = dtc_data[dtc_data['location_name'] == locations[i]] \
+        .groupby(['Hour']) \
+        .agg({'Volume': 'mean'}) \
+        .reset_index()['Volume']
+    hourly_locations[i] = hourly_locations[i].diff().fillna(hourly_locations[i][0]).astype(np.int64)
+
 # %%
-test_data_size = 8
-
-train_data = hourly[:-test_data_size]
-test_data = hourly[-test_data_size:]
-
-# normalizing data
-scaler = MinMaxScaler()
-scaler = scaler.fit(np.expand_dims(train_data, axis=1))
-train_data = scaler.transform(np.expand_dims(train_data, axis=1))
-test_data = scaler.transform(np.expand_dims(test_data, axis=1))
+def sampling_data(dataset):
+    test_data_size = 8
+    train_data = dataset[:-test_data_size]
+    test_data = dataset[-test_data_size:]
+    # normalizing data
+    scaler = MinMaxScaler()
+    scaler = scaler.fit(np.expand_dims(train_data, axis=1))
+    train_data = scaler.transform(np.expand_dims(train_data, axis=1))
+    test_data = scaler.transform(np.expand_dims(test_data, axis=1))
 
 
 
