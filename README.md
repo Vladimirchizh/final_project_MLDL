@@ -44,8 +44,19 @@ class TrafficPredictor(nn.Module):
 ```
 
 
+## Training 
+
+
+Test and training loss for two handred interation
+<img src="loss.png" width="100%"/> (*attribution: loss*)
+
+
 
 ## Evaluation of results
+Predicted traffic volume vs real traffic volume for 23rd and 24th hours
+<img src="pred_vs_real.png" width="100%"/> (*attribution: loss*)
+
+
 
 Google Colab version of the project, so you could check traffic volume prediction on real maps[1] : [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1kK85LROdFiIyzUz13XH_dcSHd3JXLZFn/view?usp=sharing)
 

@@ -213,27 +213,29 @@ plt.plot(
 
 plt.legend()
 # %%
-true_cases = dict()
-predicted_cases = dict()
-for z in range(len(hourly_locations)):
-    train_data, test_data, scaler = test_train_scaling(hourly_locations[z])
-    X_train, y_train, X_test, y_test = sampling_data(train_data, test_data )
-    model = TrafficPredictor(n_features=1, n_hidden=512, seq_len=seq_length, n_layers=2)
-    model, train_hist, test_hist = train_model(model, X_train, y_train, X_test, y_test)
-    
-    with torch.no_grad():
-      test_seq = X_test[:1]
-      preds = []
-      for _ in range(len(X_test)):
-        y_test_pred = model(test_seq)
-        pred = torch.flatten(y_test_pred).item()
-        preds.append(pred)
-        new_seq = test_seq.numpy().flatten()
-        new_seq = np.append(new_seq, [pred])
-        new_seq = new_seq[1:]
-        test_seq = torch.as_tensor(new_seq).view(1, seq_length, 1).float()
 
-    true_cases[z] = scaler.inverse_transform(np.expand_dims(y_test.flatten().numpy(), axis=0)).flatten()
-    predicted_cases[z] = scaler.inverse_transform(np.expand_dims(preds, axis=0)).flatten()
+# predicting for each location in the city
+#true_cases = dict()
+#predicted_cases = dict()
+#for z in range(len(hourly_locations)):
+#    train_data, test_data, scaler = test_train_scaling(hourly_locations[z])
+#    X_train, y_train, X_test, y_test = sampling_data(train_data, test_data )
+#    model = TrafficPredictor(n_features=1, n_hidden=512, seq_len=seq_length, n_layers=2)
+#    model, train_hist, test_hist = train_model(model, X_train, y_train, X_test, y_test)
+    
+#    with torch.no_grad():
+#      test_seq = X_test[:1]
+#      preds = []
+#      for _ in range(len(X_test)):
+#        y_test_pred = model(test_seq)
+#        pred = torch.flatten(y_test_pred).item()
+#        preds.append(pred)
+#        new_seq = test_seq.numpy().flatten()
+#        new_seq = np.append(new_seq, [pred])
+#        new_seq = new_seq[1:]
+#        test_seq = torch.as_tensor(new_seq).view(1, seq_length, 1).float()
+#
+#    true_cases[z] = scaler.inverse_transform(np.expand_dims(y_test.flatten().numpy(), axis=0)).flatten()
+#    predicted_cases[z] = scaler.inverse_transform(np.expand_dims(preds, axis=0)).flatten()
     
 # %%
