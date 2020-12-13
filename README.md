@@ -46,7 +46,49 @@ class TrafficPredictor(nn.Module):
 
 ## Training 
 
+To perform training I have chosen standard Adam optimiser and MSE loss 
 
+
+```
+
+def train_model(model,train_data,train_labels, test_data=None,test_labels=None):
+    loss_fn = torch.nn.MSELoss(reduction='sum')
+
+    optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
+    num_epochs = 200
+
+    train_hist = np.zeros(num_epochs)
+    test_hist = np.zeros(num_epochs)
+
+    for t in range(num_epochs):
+        model.reset_hidden_state()
+
+        y_pred = model(X_train)
+
+        loss = loss_fn(y_pred.float(), y_train)
+
+        if test_data is not None:
+            with torch.no_grad():
+                y_test_pred = model(X_test)
+                test_loss = loss_fn(y_test_pred.float(), y_test)
+            test_hist[t] = test_loss.item()
+
+            if t % 10 == 0:
+                print(f'Epoch {t} train loss: {loss.item()} test loss: {test_loss.item()}')
+        elif t % 10 == 0:
+            print(f'Epoch {t} train loss: {loss.item()}')
+
+        train_hist[t] = loss.item()
+
+        optimiser.zero_grad()
+
+        loss.backward()
+
+        optimiser.step()
+
+    return model.eval(), train_hist, test_hist
+```
+During the training I measured the result for both sample.
 Test and training loss for two handred interation
 <img src="loss.png" width="100%"/>
 
@@ -68,5 +110,4 @@ Google Colab version of the project, so you could check traffic volume predictio
 <a id="1">[1]</a> 
 vinay shanbhag 
 https://www.kaggle.com/vinayshanbhag/time-series-on-a-map-using-folium
-
 
