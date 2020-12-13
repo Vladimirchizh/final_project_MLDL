@@ -58,8 +58,8 @@ Predicted traffic volume vs real traffic volume for 22nd and 23rd hours
 As we can see when you measure mean volume of traffic for the whole city model ain't look so efficient.
 
 Although if we look at every possible location of the traffic jam and predict the volume for each of them the results are pretty close to real.
-<img src="real.png" width="50%"> <img src="predicted.png" width="50%"/>
- Real vs Predicted
+<img src="real.png" width="100%"/>(*Real mean volume for these roads at 22:00 - 23:00*)
+<img src="predicted.png" width="100%"/>(*Predicted volume of the traffic for these roads at 22:00 - 23:00*)
 
 
 Google Colab version of the project, so you could check traffic volume prediction on real maps[1] : [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1kK85LROdFiIyzUz13XH_dcSHd3JXLZFn/view?usp=sharing)
