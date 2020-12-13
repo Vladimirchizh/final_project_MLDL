@@ -4,7 +4,7 @@ Author: Vladimir Chizhevskiy
 ## Data preparation 
 There were not so much changes applied to the data
 - My pipeline for data retreiving was to take mean traffic for the area for every hour and then to create sequences of five hours after the current value so we could use the obtained data for RNN
-- I used not the volume of traffic but its difference from the hour to hour starting the first value
+- I used not the volume of traffic but its normalized difference from the hour to hour starting the first value
 ```
 df[i].diff() \
   .fillna(df[i][0]).astype(np.int64)
