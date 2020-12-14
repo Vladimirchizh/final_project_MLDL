@@ -1,5 +1,6 @@
 # Report: Traffic Prediction
 Author: Vladimir Chizhevskiy
+
 Mines Nancy, ML&DL 2020 Course Final Project
 ## Data preparation 
 There were not so much changes applied to the data
