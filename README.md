@@ -1,6 +1,6 @@
-# Report Project Mines ML&DL 2020
+# Report: Traffic Prediction
 Author: Vladimir Chizhevskiy
-
+Mines Nancy, ML&DL 2020 Course Final Project
 ## Data preparation 
 There were not so much changes applied to the data
 - My pipeline for data retreiving was to take mean traffic for the area for every hour and then to create sequences of five hours after the current value so we could use the obtained data for RNN
@@ -89,15 +89,15 @@ def train_model(model,train_data,train_labels, test_data=None,test_labels=None):
     return model.eval(), train_hist, test_hist
 ```
 During the training I measured the result for both sample.
-Test and training loss for two handred interation
+Test and training loss for two hundred interation
 <img src="loss.png" width="100%"/>
 
 
 
-## Evaluation of results
+## Evaluation of the results
 Predicted traffic volume vs real traffic volume for 22nd and 23rd hours
 <img src="pred_vs_real.png" width="100%"/>
-As we can see when you measure mean volume of traffic for the whole city model ain't look so efficient.
+As we can see, when you measure mean volume of traffic for the whole city model ain't look so efficient.
 
 Although if we look at every possible location of the traffic jam and predict the volume for each of them the results are pretty close to real.
 <img src="real.png" width="100%"/>(*Real mean volume for these roads at 22:00 - 23:00*)
